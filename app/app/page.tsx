@@ -24,10 +24,10 @@ export default async function HomePage() {
 
         {/* Top bar */}
         <div className="relative z-10 flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <span className="text-2xl font-black text-white italic">Oficios</span>
-            <span className="text-2xl font-black text-[#F8C927] italic">Go!</span>
-          </div>
+          <Link href="/app" className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-white.svg" alt="OficiosGo!" className="h-11" />
+          </Link>
           <Link href="/app/cuenta" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/></svg>
           </Link>

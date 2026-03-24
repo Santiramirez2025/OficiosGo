@@ -5,9 +5,9 @@ export function Footer() {
     <footer className="bg-[#0d0e14] text-white pt-12 pb-6 px-5">
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
         <div>
-          <div className="flex items-center gap-1.5 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#F8C927] flex items-center justify-center text-xs font-black text-[#1A1D2E]">Go</div>
-            <span className="text-lg font-black italic">Oficios<span className="text-[#F5A623]">Go!</span></span>
+          <div className="flex items-center mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-white.svg" alt="OficiosGo!" className="h-10" />
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">
             El marketplace de oficios de Villa María. Profesionales verificados a un clic.

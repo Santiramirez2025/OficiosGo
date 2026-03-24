@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { Logo } from "@/components/ui/logo";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -29,13 +30,8 @@ export function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-5 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-[10px] bg-brand-yellow flex items-center justify-center text-sm font-black text-brand-black shadow-sm">
-              Go
-            </div>
-            <span className="text-xl font-black text-brand-black tracking-tight">
-              Oficios<span className="text-brand-gold">Go!</span>
-            </span>
+          <Link href="/" className="flex items-center">
+            <Logo variant="dark" height={44} />
           </Link>
 
           {/* Desktop */}

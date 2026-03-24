@@ -40,9 +40,8 @@ export function InstallBanner() {
   return (
     <div className="fixed bottom-[76px] left-3 right-3 z-50 animate-slide-up">
       <div className="bg-gradient-to-r from-[#1A1D2E] to-[#252839] rounded-2xl p-3.5 flex items-center gap-3 shadow-2xl border border-[#F8C92733]">
-        <div className="w-11 h-11 rounded-xl bg-[#F8C927] flex items-center justify-center text-lg font-black text-[#1A1D2E] shrink-0">
-          Go
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-white.svg" alt="OficiosGo!" className="w-11 h-11 rounded-xl shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-bold text-white">Instalar OficiosGo!</div>
           <div className="text-[11px] text-gray-400">Acceso directo en tu pantalla</div>
