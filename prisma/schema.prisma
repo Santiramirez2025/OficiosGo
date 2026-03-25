@@ -97,6 +97,7 @@ model Profile {
   yearsExperience Int?
   matricula       String?
   availability    String?
+  urgencias24hs   Boolean         @default(false)
 
   tier            SubscriptionTier @default(FREE)
   averageRating   Float           @default(0)

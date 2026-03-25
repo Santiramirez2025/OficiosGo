@@ -9,12 +9,14 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres").max(100),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
-  phone: z.string().regex(/^\d{10,13}$/, "Teléfono inválido").optional(),
+  phone: z.string().min(8, "Teléfono inválido").max(15).optional(),
   dni: z.string().min(7, "DNI inválido").max(8, "DNI inválido").regex(/^\d+$/, "Solo números"),
   birthDate: z.string().min(1, "Fecha de nacimiento requerida"),
   categoryId: z.string().cuid("Categoría inválida"),
   city: z.string().min(2, "Ciudad requerida"),
+  urgencias24hs: z.boolean().default(false),
 });
+
 
 export const updateProfileSchema = z.object({
   headline: z.string().min(10, "Mínimo 10 caracteres").max(120).optional(),

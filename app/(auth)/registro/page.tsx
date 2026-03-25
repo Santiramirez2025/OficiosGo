@@ -3,18 +3,24 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Navbar } from "@/components/ui/navbar";
 
 type Category = { id: string; name: string; slug: string; icon: string | null };
 
 export default function RegisterPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [step, setStep] = useState(1);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [form, setForm] = useState({
-    name: "", email: "", password: "", phone: "",
-    dni: "", birthDate: "",
-    categoryId: "", city: "Villa María",
+    name: "",
+    dni: "",
+    birthDate: "",
+    email: "",
+    password: "",
+    phone: "",
+    categoryId: "",
+    city: "Villa María",
+    urgencias24hs: false,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,17 +29,37 @@ export default function RegisterPage() {
     fetch("/api/categories").then((r) => r.json()).then((d) => setCategories(d.data || []));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
 
-    if (!acceptedTerms) {
-      setError("Debés aceptar los términos y condiciones para continuar");
-      return;
-    }
+  const validateStep1 = () => {
+    if (!form.name || form.name.length < 2) { setError("Ingresá tu nombre completo"); return false; }
+    if (!form.dni || form.dni.length < 7 || !/^\d+$/.test(form.dni)) { setError("DNI inválido — solo números, sin puntos"); return false; }
+    if (!form.birthDate) { setError("Ingresá tu fecha de nacimiento"); return false; }
+    const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
+    if (age < 18) { setError("Debés ser mayor de 18 años"); return false; }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) { setError("Email inválido"); return false; }
+    if (!form.password || form.password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return false; }
+    if (!form.phone || form.phone.length < 8) { setError("Ingresá un teléfono válido"); return false; }
+    return true;
+  };
+
+  const nextStep = () => {
+    setError("");
+    if (step === 1 && validateStep1()) setStep(2);
+    if (step === 2 && validateStep2()) setStep(3);
+  };
+
+  const handleSubmit = async () => {
+    setError("");
+    if (!form.categoryId) { setError("Seleccioná tu oficio"); return; }
+    if (!acceptedTerms) { setError("Debés aceptar los términos y condiciones"); return; }
 
     setLoading(true);
-
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -41,10 +67,7 @@ export default function RegisterPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Error al registrar");
-        return;
-      }
+      if (!res.ok) { setError(data.error || "Error al registrar"); return; }
       router.push("/app/dashboard");
       router.refresh();
     } catch {
@@ -54,115 +77,143 @@ export default function RegisterPage() {
     }
   };
 
-  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }));
+  const stepTitles = ["Datos personales", "Cuenta y contacto", "Tu oficio"];
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-yellow-50 to-gray-50 pt-20 pb-10 px-5">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #1A1D2E 0%, #252839 40%, #F5F5F7 40%)" }}>
+      <div style={{ padding: "16px 20px 0" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-dark.svg" alt="OficiosGo!" className="h-12 w-auto mx-auto mb-4" />
-            <h1 className="text-3xl font-black text-brand-black">Crear cuenta</h1>
-            <p className="text-gray-500 mt-2">Registrate como profesional y empezá a recibir clientes</p>
+            <img src="/logo-white.svg" alt="OficiosGo!" style={{ height: 36, width: "auto" }} />
+          </Link>
+          <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#F8C927", textDecoration: "none" }}>
+            Ya tengo cuenta
+          </Link>
+        </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 20, marginBottom: 16 }}>
+          {[1, 2, 3].map((s) => (
+            <div key={s} style={{ flex: 1, height: 4, borderRadius: 2, background: s <= step ? "#F8C927" : "rgba(255,255,255,0.15)", transition: "background 0.3s" }} />
+          ))}
+        </div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>
+          Paso {step} de 3 — {stepTitles[step - 1]}
+        </p>
+      </div>
+
+      <div style={{ margin: "0 16px", background: "#fff", borderRadius: 24, padding: "28px 24px", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", minHeight: 400 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 900, color: "#1A1D2E", marginBottom: 4 }}>
+          {step === 1 ? "¿Quién sos?" : step === 2 ? "Tu cuenta" : "¿Qué hacés?"}
+        </h1>
+        <p style={{ fontSize: 13, color: "#9CA3AF", marginBottom: 20 }}>
+          {step === 1 ? "Necesitamos verificar tu identidad con DNI y CUIL" : step === 2 ? "Datos para ingresar y que te contacten" : "Elegí tu oficio y empezá a recibir clientes"}
+        </p>
+
+        {error && (
+          <div style={{ padding: "10px 14px", borderRadius: 12, background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
+            {error}
           </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-white shadow-xl shadow-black/5 border border-gray-200 space-y-4">
-            {error && (
-              <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">
-                {error}
-              </div>
-            )}
-
+        {step === 1 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Nombre completo *</label>
-              <input value={form.name} onChange={set("name")} required placeholder="Juan Pérez"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Nombre completo *</label>
+              <input value={form.name} onChange={set("name")} placeholder="Juan Pérez" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">DNI *</label>
-              <input value={form.dni} onChange={set("dni")} required placeholder="12345678" maxLength={8} inputMode="numeric"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
-              <p className="text-[11px] text-gray-400 mt-1">Sin puntos ni espacios · Se verifica con constancia de CUIL</p>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>DNI *</label>
+              <input value={form.dni} onChange={set("dni")} placeholder="12345678" maxLength={8} inputMode="numeric" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Sin puntos ni espacios · Se verifica con constancia de CUIL</p>
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Fecha de nacimiento *</label>
-              <input type="date" value={form.birthDate} onChange={set("birthDate")} required max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
-              <p className="text-[11px] text-gray-400 mt-1">Debés ser mayor de 18 años</p>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Fecha de nacimiento *</label>
+              <input type="date" value={form.birthDate} onChange={set("birthDate")} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Debés ser mayor de 18 años</p>
             </div>
+          </div>
+        )}
 
+        {step === 2 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Email *</label>
-              <input type="email" value={form.email} onChange={set("email")} required placeholder="tu@email.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Email *</label>
+              <input type="email" value={form.email} onChange={set("email")} placeholder="tu@email.com" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Contraseña *</label>
-              <input type="password" value={form.password} onChange={set("password")} required placeholder="Mínimo 6 caracteres"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Contraseña *</label>
+              <input type="password" value={form.password} onChange={set("password")} placeholder="Mínimo 6 caracteres" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Teléfono / WhatsApp</label>
-              <input value={form.phone} onChange={set("phone")} placeholder="3534112233" inputMode="numeric"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Teléfono / WhatsApp *</label>
+              <input value={form.phone} onChange={set("phone")} placeholder="3534112233" inputMode="numeric" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Los clientes te contactarán por este número</p>
             </div>
+          </div>
+        )}
 
+        {step === 3 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Oficio *</label>
-              <select value={form.categoryId} onChange={set("categoryId")} required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow bg-white">
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Oficio *</label>
+              <select value={form.categoryId} onChange={set("categoryId")} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", background: "#fff", boxSizing: "border-box" }}>
                 <option value="">Seleccioná tu oficio</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-semibold text-brand-black mb-1.5">Ciudad *</label>
-              <input value={form.city} onChange={set("city")} required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Ciudad *</label>
+              <input value={form.city} onChange={set("city")} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
 
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 w-5 h-5 rounded border-gray-300 accent-[#F8C927] shrink-0"
-              />
-              <span className="text-xs text-gray-500 leading-relaxed">
-                Acepto los{" "}
-                <a href="/terminos" target="_blank" className="text-[#5C80BC] font-semibold underline">
-                  Términos y Condiciones
-                </a>{" "}
-                y la{" "}
-                <a href="/privacidad" target="_blank" className="text-[#5C80BC] font-semibold underline">
-                  Política de Privacidad
-                </a>
-                . Autorizo la verificación de mi identidad mediante DNI y constancia de CUIL.
-              </span>
+            <label style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, cursor: "pointer", border: form.urgencias24hs ? "2px solid #EF4444" : "1px solid #E5E7EB", background: form.urgencias24hs ? "#FEF2F2" : "#fff", transition: "all 0.2s" }}>
+              <div style={{ width: 44, height: 26, borderRadius: 13, background: form.urgencias24hs ? "#EF4444" : "#D1D5DB", padding: 2, flexShrink: 0, transition: "background 0.2s" }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transform: form.urgencias24hs ? "translateX(18px)" : "translateX(0)", transition: "transform 0.2s" }} />
+              </div>
+              <input type="checkbox" checked={form.urgencias24hs} onChange={(e) => setForm(f => ({ ...f, urgencias24hs: e.target.checked }))} style={{ display: "none" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: form.urgencias24hs ? "#DC2626" : "#1A1D2E" }}>🚨 Atiendo urgencias 24hs</div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>Se muestra destacado en tu perfil y en búsquedas</div>
+              </div>
             </label>
 
-            <button type="submit" disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-brand-black text-brand-yellow font-bold text-[15px] hover:bg-gray-800 transition-colors disabled:opacity-60">
-              {loading ? "Creando cuenta..." : "Crear cuenta"}
-            </button>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", marginTop: 4 }}>
+              <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: "#F8C927", flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>
+                Acepto los{" "}
+                <a href="/terminos" target="_blank" style={{ color: "#5C80BC", fontWeight: 600, textDecoration: "underline" }}>Términos y Condiciones</a>{" "}
+                y la{" "}
+                <a href="/privacidad" target="_blank" style={{ color: "#5C80BC", fontWeight: 600, textDecoration: "underline" }}>Política de Privacidad</a>.
+                Autorizo la verificación de mi identidad mediante DNI y constancia de CUIL.
+              </span>
+            </label>
+          </div>
+        )}
 
-            <p className="text-center text-sm text-gray-500">
-              ¿Ya tenés cuenta?{" "}
-              <Link href="/login" className="text-brand-blue font-bold hover:underline">Iniciá sesión</Link>
-            </p>
-          </form>
+        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+          {step > 1 && (
+            <button onClick={() => { setError(""); setStep(step - 1); }} style={{ flex: "0 0 auto", padding: "14px 20px", borderRadius: 14, border: "1px solid #E5E7EB", background: "#fff", fontSize: 14, fontWeight: 700, color: "#6B7280", cursor: "pointer" }}>
+              ← Atrás
+            </button>
+          )}
+          {step < 3 ? (
+            <button onClick={nextStep} style={{ flex: 1, padding: "14px 20px", borderRadius: 14, border: "none", background: "#F8C927", fontSize: 15, fontWeight: 800, color: "#1A1D2E", cursor: "pointer" }}>
+              Continuar →
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, padding: "14px 20px", borderRadius: 14, border: "none", background: "#1A1D2E", fontSize: 15, fontWeight: 800, color: "#F8C927", cursor: "pointer", opacity: loading ? 0.6 : 1 }}>
+              {loading ? "Creando cuenta..." : "Crear mi perfil profesional"}
+            </button>
+          )}
         </div>
       </div>
-    </>
+
+      <div style={{ textAlign: "center", padding: "20px 0 32px" }}>
+        <span style={{ fontSize: 13, color: "#9CA3AF" }}>¿Ya tenés cuenta? </span>
+        <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: "#5C80BC", textDecoration: "none" }}>Iniciá sesión</Link>
+      </div>
+    </div>
   );
 }

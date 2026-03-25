@@ -331,6 +331,7 @@ export const professionalRepository = {
     bio?: string;
     whatsapp?: string;
     province?: string;
+    urgencias24hs?: boolean;
   }) {
     return db.profile.create({ data, include: profileWithRelations });
   },

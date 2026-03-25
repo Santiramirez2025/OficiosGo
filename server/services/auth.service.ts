@@ -72,6 +72,7 @@ export const authService = {
       categoryId: input.categoryId,
       city: input.city,
       province: "Córdoba",
+      urgencias24hs: input.urgencias24hs ?? false,
     });
 
     const token = await signToken({
