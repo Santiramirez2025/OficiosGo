@@ -76,9 +76,9 @@ export function InstallButton({ variant = "small" }: { variant?: "small" | "full
 
 function IOSGuide({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-[430px] bg-[#1A1D2E] rounded-t-3xl overflow-hidden animate-slide-up">
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }} onClick={onClose} />
+      <div style={{ position: "relative", width: "100%", maxWidth: 430, background: "#1A1D2E", borderRadius: "24px 24px 0 0", overflow: "hidden", animation: "iosSlide 0.3s ease-out" }}>
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-white.svg" alt="OficiosGo!" className="h-8 w-auto" />
@@ -116,8 +116,7 @@ function IOSGuide({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <style>{`
-          @keyframes slide-up { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:translateY(0); } }
-          .animate-slide-up { animation: slide-up 0.3s cubic-bezier(.16,1,.3,1); }
+          @keyframes iosSlide { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:translateY(0); } }
         `}</style>
       </div>
     </div>
