@@ -1,0 +1,125 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
+export function InstallButton({ variant = "small" }: { variant?: "small" | "full" }) {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [installed, setInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setInstalled(true);
+      return;
+    }
+
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", () => setInstalled(true));
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+    } else if (isIOS) {
+      setShowIOSGuide(true);
+    }
+  };
+
+  if (installed) return null;
+
+  if (variant === "small") {
+    return (
+      <>
+        <button onClick={handleInstall} className="w-10 h-10 rounded-full bg-[#F8C927]/15 flex items-center justify-center" aria-label="Instalar app">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" x2="12" y1="15" y2="3" />
+          </svg>
+        </button>
+        {showIOSGuide && <IOSGuide onClose={() => setShowIOSGuide(false)} />}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <button onClick={handleInstall} className="flex items-center gap-3 w-full px-4 py-4 rounded-xl bg-gradient-to-r from-[#1A1D2E] to-[#252839] border border-[#F8C927]/20 text-left">
+        <div className="w-10 h-10 rounded-xl bg-[#F8C927] flex items-center justify-center shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1D2E" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" x2="12" y1="15" y2="3" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-bold text-white">Instalar OficiosGo!</div>
+          <div className="text-[11px] text-gray-400">Acceso directo desde tu pantalla de inicio</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+      </button>
+      {showIOSGuide && <IOSGuide onClose={() => setShowIOSGuide(false)} />}
+    </>
+  );
+}
+
+function IOSGuide({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-[430px] bg-[#1A1D2E] rounded-t-3xl overflow-hidden animate-slide-up">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-white.svg" alt="OficiosGo!" className="h-8 w-auto" />
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div className="px-5 pb-8">
+          <h3 className="text-lg font-black text-white mb-1">Instalá la app en tu celular</h3>
+          <p className="text-sm text-gray-400 mb-5">Sin descargar nada del store · 2 pasos</p>
+          <div className="space-y-4">
+            <div className="flex gap-3.5">
+              <div className="w-8 h-8 rounded-full bg-[#F8C927] flex items-center justify-center text-[#1A1D2E] text-sm font-black shrink-0">1</div>
+              <div className="flex-1 pt-0.5">
+                <p className="text-sm font-bold text-white">Tocá el botón de compartir</p>
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 w-fit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" x2="12" y1="2" y2="15" /></svg>
+                  <span className="text-xs text-gray-300">Este ícono en la barra de abajo</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3.5">
+              <div className="w-8 h-8 rounded-full bg-[#F8C927] flex items-center justify-center text-[#1A1D2E] text-sm font-black shrink-0">2</div>
+              <div className="flex-1 pt-0.5">
+                <p className="text-sm font-bold text-white">Elegí &quot;Agregar a inicio&quot;</p>
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 w-fit">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="12" x2="12" y1="8" y2="16" /><line x1="8" x2="16" y1="12" y2="12" /></svg>
+                  <span className="text-xs text-gray-300">Agregar a pantalla de inicio</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center mt-5 animate-bounce">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2.5" strokeLinecap="round"><line x1="12" x2="12" y1="5" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
+          </div>
+        </div>
+        <style>{`
+          @keyframes slide-up { from { opacity:0; transform:translateY(100%); } to { opacity:1; transform:translateY(0); } }
+          .animate-slide-up { animation: slide-up 0.3s cubic-bezier(.16,1,.3,1); }
+        `}</style>
+      </div>
+    </div>
+  );
+}
