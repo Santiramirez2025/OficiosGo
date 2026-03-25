@@ -18,12 +18,10 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ── Dark header ──────────────────────────── */}
+      {/* ── Dark header ── */}
       <div className="bg-gradient-to-b from-[#1A1D2E] to-[#252839] rounded-b-[28px] px-5 pt-4 pb-6 relative overflow-hidden">
-        {/* Dot pattern */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
 
-        {/* Top bar */}
         <div className="relative z-10 flex items-center justify-between mb-4">
           <Link href="/app" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -37,24 +35,16 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Search bar */}
         <Link href="/app/buscar" className="relative z-10 flex items-center gap-2.5 w-full px-4 py-3.5 bg-white rounded-[14px] shadow-lg shadow-black/10">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <span className="text-sm text-gray-400 font-medium">¿Qué necesitás hoy?</span>
         </Link>
 
-        {/* CTA Buttons */}
         <HomeCTAs />
 
-        {/* Category grid 2x2 */}
         <div className="relative z-10 grid grid-cols-2 gap-3 mt-5">
           {categories.slice(0, 4).map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/app/buscar?category=${cat.slug}`}
-              className="relative overflow-hidden p-5 rounded-2xl text-center"
-              style={{ background: "linear-gradient(145deg, #F8C927, #E5B800)" }}
-            >
+            <Link key={cat.id} href={`/app/buscar?category=${cat.slug}`} className="relative overflow-hidden p-5 rounded-2xl text-center" style={{ background: "linear-gradient(145deg, #F8C927, #E5B800)" }}>
               <div className="absolute -top-2.5 -right-2.5 w-12 h-12 rounded-full bg-white/15" />
               <div className="text-3xl mb-1.5 drop-shadow-sm">{cat.icon}</div>
               <div className="text-sm font-extrabold text-[#1A1D2E]">{cat.name}</div>
@@ -62,26 +52,20 @@ export default async function HomePage() {
           ))}
         </div>
 
-        {/* More categories */}
         <Link href="/app/buscar" className="relative z-10 block w-full mt-3 py-2.5 text-center text-[13px] font-semibold text-white bg-white/[0.08] rounded-xl border border-white/10">
           Ver las {categories.length} categorías →
         </Link>
       </div>
 
-      {/* ── Featured pros carousel ───────────────── */}
+      {/* ── Featured pros ── */}
       <div className="mt-6 mb-2">
         <div className="flex items-center justify-between px-5 mb-3">
           <h2 className="text-lg font-black text-[#1A1D2E]">Profesionales Recomendados</h2>
           <Link href="/app/buscar" className="text-xs font-bold text-[#F8C927]">Ver todos</Link>
         </div>
-
         <div className="flex gap-3 overflow-x-auto px-5 pb-2 snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
           {featured.map((pro) => (
-            <Link
-              key={pro.id}
-              href={`/app/profesional/${pro.slug}`}
-              className="snap-start shrink-0 w-[145px] bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
-            >
+            <Link key={pro.id} href={`/app/profesional/${pro.slug}`} className="snap-start shrink-0 w-[145px] bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="relative h-[110px] overflow-hidden bg-gray-200">
                 {pro.photos[0] ? (
                   <img src={pro.photos[0].url} alt={pro.user.name} className="w-full h-full object-cover" />
@@ -94,34 +78,23 @@ export default async function HomePage() {
                   <span className="text-[#F8C927] text-[10px]">★</span>
                   <span className="text-[11px] font-bold text-white">{pro.averageRating.toFixed(1)}</span>
                 </div>
-                <div className="absolute bottom-1.5 right-1.5">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#EF4444"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-                </div>
               </div>
               <div className="p-2.5">
                 <div className="text-[13px] font-extrabold text-[#1A1D2E] leading-tight truncate">{pro.user.name}</div>
                 <div className="text-[11px] text-gray-500 mt-0.5">· {pro.category.name}</div>
-                <div className="mt-2 py-1.5 rounded-lg bg-[#F8C927] text-center text-[11px] font-extrabold text-[#1A1D2E]">
-                  Contactar
-                </div>
+                <div className="mt-2 py-1.5 rounded-lg bg-[#F8C927] text-center text-[11px] font-extrabold text-[#1A1D2E]">Contactar</div>
               </div>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* ── All professionals list ───────────────── */}
-      <div className="px-5 pb-24">
+      {/* ── All professionals ── */}
+      <div className="px-5 pb-6">
         <h2 className="text-lg font-black text-[#1A1D2E] mb-3">Todos los Profesionales</h2>
         <div className="flex flex-col gap-2.5">
           {featured.map((pro) => (
-            <Link
-              key={pro.id}
-              href={`/app/profesional/${pro.slug}`}
-              className={`flex items-center gap-3 p-3 rounded-2xl bg-white border shadow-sm ${
-                pro.tier === "PREMIUM" ? "border-[#F8C927]/30" : "border-gray-200"
-              }`}
-            >
+            <Link key={pro.id} href={`/app/profesional/${pro.slug}`} className={`flex items-center gap-3 p-3 rounded-2xl bg-white border shadow-sm ${pro.tier === "PREMIUM" ? "border-[#F8C927]/30" : "border-gray-200"}`}>
               {pro.photos[0] ? (
                 <img src={pro.photos[0].url} alt={pro.user.name} className="w-14 h-14 rounded-[14px] object-cover shrink-0" />
               ) : (
@@ -149,11 +122,11 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* ── Sponsors ─────────────────────────────── */}
-      {sponsors.length > 0 && (
-        <div className="px-5 pb-24">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center mb-3">Proveedores asociados</h3>
-          <div className="flex flex-col gap-2">
+      {/* ── Sponsors + Publicitar ── */}
+      <div className="px-5 pb-24">
+        <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center mb-3">Proveedores asociados</h3>
+        {sponsors.length > 0 && (
+          <div className="flex flex-col gap-2 mb-3">
             {sponsors.map((s) => (
               <div key={s.id} className={`p-4 rounded-2xl border ${s.tier === "PREMIUM" ? "border-[#F8C927]/30 bg-yellow-50/50" : "border-gray-200 bg-white"}`}>
                 <div className="flex items-center justify-between">
@@ -165,9 +138,17 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
+        )}
+        
+        <a href="https://wa.me/5493534127410?text=Hola%2C%20quiero%20publicitar%20mi%20negocio%20en%20OficiosGo!"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#1A1D2E] border border-[#F8C927]/20 text-[#F8C927] text-sm font-bold"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
+          Publicitá tu negocio aquí
+        </a>
+      </div>
     </>
   );
 }

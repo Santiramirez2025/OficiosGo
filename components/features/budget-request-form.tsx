@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 
 type Category = { id: string; name: string; slug: string; icon: string | null };
-
 type Step = "form" | "sending" | "success";
 
 export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
@@ -22,9 +21,7 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
   });
 
   useEffect(() => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((d) => setCategories(d.data || []));
+    fetch("/api/categories").then((r) => r.json()).then((d) => setCategories(d.data || []));
   }, []);
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -32,7 +29,6 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = async () => {
     setError("");
-
     if (!form.categoryId || !form.clientName || !form.clientPhone || !form.description) {
       setError("Completá todos los campos obligatorios");
       return;
@@ -47,7 +43,6 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
     }
 
     setStep("sending");
-
     try {
       const res = await fetch("/api/budget", {
         method: "POST",
@@ -55,18 +50,9 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Error al enviar");
-        setStep("form");
-        return;
-      }
-
+      if (!res.ok) { setError(data.error || "Error al enviar"); setStep("form"); return; }
       setNotifiedCount(data.data.totalNotified);
-      setWaLinks(data.data.notifications.map((n: { name: string; waLink: string }) => ({
-        name: n.name,
-        waLink: n.waLink,
-      })));
+      setWaLinks(data.data.notifications.map((n: { name: string; waLink: string }) => ({ name: n.name, waLink: n.waLink })));
       setStep("success");
     } catch {
       setError("Error de conexión");
@@ -77,12 +63,9 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-
       <div className="relative w-full max-w-[430px] max-h-[90vh] bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden animate-slide-up">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
-          <h2 className="text-lg font-black text-[#1A1D2E]">
-            {step === "success" ? "¡Listo!" : "Pedí tu presupuesto"}
-          </h2>
+          <h2 className="text-lg font-black text-[#1A1D2E]">{step === "success" ? "¡Listo!" : "Pedí tu presupuesto"}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
@@ -91,100 +74,53 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
         <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 60px)" }}>
           {step === "form" && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Contanos qué necesitás y le avisamos a todos los profesionales de esa categoría. Recibís varias propuestas y elegís la mejor.
-              </p>
+              <p className="text-sm text-gray-500 leading-relaxed">Contanos qué necesitás y le avisamos a todos los profesionales de esa categoría.</p>
 
-              {error && (
-                <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">
-                  {error}
-                </div>
-              )}
+              {error && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium border border-red-100">{error}</div>}
 
               <div>
                 <label className="block text-sm font-semibold text-[#1A1D2E] mb-1.5">¿Qué servicio necesitás? *</label>
-                <select
-                  value={form.categoryId}
-                  onChange={set("categoryId")}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20 bg-white"
-                >
+                <select value={form.categoryId} onChange={set("categoryId")} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20 bg-white">
                   <option value="">Elegí una categoría</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-                  ))}
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1A1D2E] mb-1.5">Describí qué necesitás *</label>
-                <textarea
-                  value={form.description}
-                  onChange={set("description")}
-                  rows={3}
-                  placeholder="Ej: Necesito arreglar una pérdida en el baño, el caño de abajo del lavamanos gotea..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20 resize-none"
-                />
+                <textarea value={form.description} onChange={set("description")} rows={3} placeholder="Ej: Necesito arreglar una pérdida en el baño..." className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20 resize-none" />
                 <div className="text-right text-[10px] text-gray-400 mt-0.5">{form.description.length}/1000</div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1A1D2E] mb-1.5">Tu nombre *</label>
-                <input
-                  value={form.clientName}
-                  onChange={set("clientName")}
-                  placeholder="Juan Pérez"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20"
-                />
+                <input value={form.clientName} onChange={set("clientName")} placeholder="Juan Pérez" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20" />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1A1D2E] mb-1.5">Tu teléfono / WhatsApp *</label>
-                <input
-                  value={form.clientPhone}
-                  onChange={set("clientPhone")}
-                  placeholder="3534112233"
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20"
-                />
+                <input value={form.clientPhone} onChange={set("clientPhone")} placeholder="3534112233" type="tel" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20" />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1A1D2E] mb-1.5">Email <span className="text-gray-400 font-normal">(opcional)</span></label>
-                <input
-                  value={form.clientEmail}
-                  onChange={set("clientEmail")}
-                  placeholder="tu@email.com"
-                  type="email"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20"
-                />
+                <input value={form.clientEmail} onChange={set("clientEmail")} placeholder="tu@email.com" type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#F8C927] focus:ring-2 focus:ring-[#F8C927]/20" />
               </div>
 
               <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-0.5 w-5 h-5 rounded border-gray-300 accent-[#F8C927] shrink-0"
-                />
+                <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 w-5 h-5 rounded border-gray-300 accent-[#F8C927] shrink-0" />
                 <span className="text-xs text-gray-500 leading-relaxed">
-                  Acepto los{" "}
+                  Al enviar este pedido, declaro que soy mayor de edad y acepto los{" "}
                   <a href="/terminos" target="_blank" className="text-[#5C80BC] font-semibold underline">Términos y Condiciones</a>{" "}
                   y la{" "}
-                  <a href="/privacidad" target="_blank" className="text-[#5C80BC] font-semibold underline">Política de Privacidad</a>.
-                  Entiendo que mis datos de contacto serán compartidos con los profesionales de la categoría elegida.
+                  <a href="/privacidad" target="_blank" className="text-[#5C80BC] font-semibold underline">Política de Privacidad</a>{" "}
+                  de OficiosGo!. Comprendo que la plataforma actúa únicamente como nexo de conexión y no se responsabiliza por la ejecución, calidad o seguridad de los servicios contratados.
                 </span>
               </label>
 
-              <button
-                onClick={handleSubmit}
-                className="w-full py-4 rounded-2xl bg-[#F8C927] text-[#1A1D2E] font-extrabold text-[15px] shadow-lg shadow-[#F8C927]/20 active:scale-[0.98] transition-transform mt-2"
-              >
+              <button onClick={handleSubmit} className="w-full py-4 rounded-2xl bg-[#F8C927] text-[#1A1D2E] font-extrabold text-[15px] shadow-lg shadow-[#F8C927]/20 active:scale-[0.98] transition-transform mt-2">
                 Enviar pedido de presupuesto
               </button>
-
-              <p className="text-[11px] text-gray-400 text-center">
-                Tu pedido se enviará a todos los profesionales de la categoría elegida
-              </p>
             </div>
           )}
 
@@ -192,7 +128,6 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-12 h-12 border-4 border-[#F8C927] border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-sm font-semibold text-[#1A1D2E]">Enviando a los profesionales...</p>
-              <p className="text-xs text-gray-400 mt-1">Esto toma solo un segundo</p>
             </div>
           )}
 
@@ -203,17 +138,12 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </div>
                 <h3 className="text-xl font-black text-[#1A1D2E]">¡Pedido enviado!</h3>
-                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                  Se notificó a <strong className="text-[#1A1D2E]">{notifiedCount} profesionales</strong> de tu pedido.
-                  Te van a contactar por WhatsApp con sus propuestas.
-                </p>
+                <p className="text-sm text-gray-500 mt-2">Se notificó a <strong className="text-[#1A1D2E]">{notifiedCount} profesionales</strong>. Te van a contactar por WhatsApp.</p>
               </div>
 
               {waLinks.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-                    También podés contactarlos directo:
-                  </p>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">También podés contactarlos directo:</p>
                   <div className="space-y-2">
                     {waLinks.slice(0, 5).map((pro) => (
                       <a key={pro.name} href={pro.waLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl bg-green-50 border border-green-100">
@@ -231,22 +161,14 @@ export function BudgetRequestForm({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <button
-                onClick={onClose}
-                className="w-full py-3.5 rounded-xl bg-[#1A1D2E] text-[#F8C927] font-bold text-sm"
-              >
-                Cerrar
-              </button>
+              <button onClick={onClose} className="w-full py-3.5 rounded-xl bg-[#1A1D2E] text-[#F8C927] font-bold text-sm">Cerrar</button>
             </div>
           )}
         </div>
       </div>
 
       <style>{`
-        @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-up { animation: slide-up 0.3s ease-out; }
       `}</style>
     </div>

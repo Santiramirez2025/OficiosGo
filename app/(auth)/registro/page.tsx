@@ -11,10 +11,13 @@ export default function RegisterPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [step, setStep] = useState(1);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [form, setForm] = useState({
     name: "",
     dni: "",
-    birthDate: "",
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
     email: "",
     password: "",
     phone: "",
@@ -32,18 +35,29 @@ export default function RegisterPage() {
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 70 }, (_, i) => currentYear - 18 - i);
+
+  const getBirthDate = () => {
+    if (form.birthDay && form.birthMonth && form.birthYear) {
+      return `${form.birthYear}-${form.birthMonth.padStart(2, "0")}-${form.birthDay.padStart(2, "0")}`;
+    }
+    return "";
+  };
+
   const validateStep1 = () => {
     if (!form.name || form.name.length < 2) { setError("Ingresá tu nombre completo"); return false; }
     if (!form.dni || form.dni.length < 7 || !/^\d+$/.test(form.dni)) { setError("DNI inválido — solo números, sin puntos"); return false; }
-    if (!form.birthDate) { setError("Ingresá tu fecha de nacimiento"); return false; }
-    const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
-    if (age < 18) { setError("Debés ser mayor de 18 años"); return false; }
+    if (!form.birthDay || !form.birthMonth || !form.birthYear) { setError("Completá tu fecha de nacimiento"); return false; }
     return true;
   };
 
   const validateStep2 = () => {
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) { setError("Email inválido"); return false; }
     if (!form.password || form.password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return false; }
+    if (form.password !== confirmPassword) { setError("Las contraseñas no coinciden"); return false; }
     if (!form.phone || form.phone.length < 8) { setError("Ingresá un teléfono válido"); return false; }
     return true;
   };
@@ -64,7 +78,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, birthDate: getBirthDate() }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Error al registrar"); return; }
@@ -78,6 +92,9 @@ export default function RegisterPage() {
   };
 
   const stepTitles = ["Datos personales", "Cuenta y contacto", "Tu oficio"];
+  const selectStyle: React.CSSProperties = { width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", background: "#fff", boxSizing: "border-box", appearance: "none", WebkitAppearance: "none" };
+  const inputStyle: React.CSSProperties = { width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 };
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #1A1D2E 0%, #252839 40%, #F5F5F7 40%)" }}>
@@ -96,9 +113,7 @@ export default function RegisterPage() {
             <div key={s} style={{ flex: 1, height: 4, borderRadius: 2, background: s <= step ? "#F8C927" : "rgba(255,255,255,0.15)", transition: "background 0.3s" }} />
           ))}
         </div>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>
-          Paso {step} de 3 — {stepTitles[step - 1]}
-        </p>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>Paso {step} de 3 — {stepTitles[step - 1]}</p>
       </div>
 
       <div style={{ margin: "0 16px", background: "#fff", borderRadius: 24, padding: "28px 24px", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", minHeight: 400 }}>
@@ -106,7 +121,7 @@ export default function RegisterPage() {
           {step === 1 ? "¿Quién sos?" : step === 2 ? "Tu cuenta" : "¿Qué hacés?"}
         </h1>
         <p style={{ fontSize: 13, color: "#9CA3AF", marginBottom: 20 }}>
-          {step === 1 ? "Necesitamos verificar tu identidad con DNI y CUIL" : step === 2 ? "Datos para ingresar y que te contacten" : "Elegí tu oficio y empezá a recibir clientes"}
+          {step === 1 ? "Necesitamos verificar tu identidad" : step === 2 ? "Datos para ingresar y que te contacten" : "Elegí tu oficio y empezá a recibir clientes"}
         </p>
 
         {error && (
@@ -118,17 +133,36 @@ export default function RegisterPage() {
         {step === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Nombre completo *</label>
-              <input value={form.name} onChange={set("name")} placeholder="Juan Pérez" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Nombre completo *</label>
+              <input value={form.name} onChange={set("name")} placeholder="Juan Pérez" style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>DNI *</label>
-              <input value={form.dni} onChange={set("dni")} placeholder="12345678" maxLength={8} inputMode="numeric" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
-              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Sin puntos ni espacios · Se verifica con constancia de CUIL</p>
+              <label style={labelStyle}>DNI *</label>
+              <input value={form.dni} onChange={set("dni")} placeholder="12345678" maxLength={8} inputMode="numeric" style={inputStyle} />
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Sin puntos ni espacios</p>
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Fecha de nacimiento *</label>
-              <input type="date" value={form.birthDate} onChange={set("birthDate")} max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Fecha de nacimiento *</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <select value={form.birthDay} onChange={set("birthDay")} style={{ ...selectStyle, flex: "0 0 28%" }}>
+                  <option value="">Día</option>
+                  {days.map((d) => (
+                    <option key={d} value={String(d)}>{d}</option>
+                  ))}
+                </select>
+                <select value={form.birthMonth} onChange={set("birthMonth")} style={{ ...selectStyle, flex: "1 1 auto" }}>
+                  <option value="">Mes</option>
+                  {months.map((m, i) => (
+                    <option key={m} value={String(i + 1)}>{m}</option>
+                  ))}
+                </select>
+                <select value={form.birthYear} onChange={set("birthYear")} style={{ ...selectStyle, flex: "0 0 30%" }}>
+                  <option value="">Año</option>
+                  {years.map((y) => (
+                    <option key={y} value={String(y)}>{y}</option>
+                  ))}
+                </select>
+              </div>
               <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Debés ser mayor de 18 años</p>
             </div>
           </div>
@@ -137,16 +171,20 @@ export default function RegisterPage() {
         {step === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Email *</label>
-              <input type="email" value={form.email} onChange={set("email")} placeholder="tu@email.com" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Email *</label>
+              <input type="email" value={form.email} onChange={set("email")} placeholder="tu@email.com" style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Contraseña *</label>
-              <input type="password" value={form.password} onChange={set("password")} placeholder="Mínimo 6 caracteres" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Contraseña *</label>
+              <input type="password" value={form.password} onChange={set("password")} placeholder="Mínimo 6 caracteres" style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Teléfono / WhatsApp *</label>
-              <input value={form.phone} onChange={set("phone")} placeholder="3534112233" inputMode="numeric" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Repetí la contraseña *</label>
+              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repetí tu contraseña" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Teléfono / WhatsApp *</label>
+              <input value={form.phone} onChange={set("phone")} placeholder="3534112233" inputMode="numeric" style={inputStyle} />
               <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Los clientes te contactarán por este número</p>
             </div>
           </div>
@@ -155,8 +193,8 @@ export default function RegisterPage() {
         {step === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Oficio *</label>
-              <select value={form.categoryId} onChange={set("categoryId")} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", background: "#fff", boxSizing: "border-box" }}>
+              <label style={labelStyle}>Oficio *</label>
+              <select value={form.categoryId} onChange={set("categoryId")} style={selectStyle}>
                 <option value="">Seleccioná tu oficio</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
@@ -164,8 +202,8 @@ export default function RegisterPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#1A1D2E", marginBottom: 6 }}>Ciudad *</label>
-              <input value={form.city} onChange={set("city")} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <label style={labelStyle}>Ciudad *</label>
+              <input value={form.city} onChange={set("city")} style={inputStyle} />
             </div>
 
             <label style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, cursor: "pointer", border: form.urgencias24hs ? "2px solid #EF4444" : "1px solid #E5E7EB", background: form.urgencias24hs ? "#FEF2F2" : "#fff", transition: "all 0.2s" }}>
@@ -179,14 +217,14 @@ export default function RegisterPage() {
               </div>
             </label>
 
-            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", marginTop: 4 }}>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", marginTop: 4, padding: "12px 14px", borderRadius: 14, border: "1px solid #E5E7EB", background: acceptedTerms ? "#F0FDF4" : "#fff", transition: "all 0.2s" }}>
               <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: "#F8C927", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5 }}>
-                Acepto los{" "}
+              <span style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.6 }}>
+                Al hacer clic en &quot;Crear mi perfil&quot;, declaro que soy mayor de edad y acepto los{" "}
                 <a href="/terminos" target="_blank" style={{ color: "#5C80BC", fontWeight: 600, textDecoration: "underline" }}>Términos y Condiciones</a>{" "}
                 y la{" "}
-                <a href="/privacidad" target="_blank" style={{ color: "#5C80BC", fontWeight: 600, textDecoration: "underline" }}>Política de Privacidad</a>.
-                Autorizo la verificación de mi identidad mediante DNI y constancia de CUIL.
+                <a href="/privacidad" target="_blank" style={{ color: "#5C80BC", fontWeight: 600, textDecoration: "underline" }}>Política de Privacidad</a>{" "}
+                de OficiosGo!. Comprendo y acepto que la plataforma actúa únicamente como un nexo de conexión y no se responsabiliza por la ejecución, calidad o seguridad de los servicios contratados, ni por el comportamiento de los usuarios.
               </span>
             </label>
           </div>
