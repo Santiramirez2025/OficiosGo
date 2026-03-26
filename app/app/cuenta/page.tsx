@@ -16,7 +16,7 @@ export default async function CuentaPage() {
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/></svg>
           </div>
           <p className="text-sm text-gray-400 mb-4">Iniciá sesión para ver tu cuenta</p>
-          <Link href="/app/login" className="inline-block px-8 py-3 rounded-xl bg-[#F8C927] text-[#1A1D2E] font-extrabold text-sm">
+          <Link href="/login" className="inline-block px-8 py-3 rounded-xl bg-[#F8C927] text-[#1A1D2E] font-extrabold text-sm">
             Ingresar
           </Link>
         </div>

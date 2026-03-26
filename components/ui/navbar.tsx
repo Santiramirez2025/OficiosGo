@@ -10,99 +10,178 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Bloquea scroll del body cuando el menú mobile está abierto
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Cierra menú al cambiar de ruta
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+
   const links = [
     { href: "/", label: "Inicio" },
-    { href: "/buscar", label: "Buscar" },
-    { href: "/dashboard", label: "Mi Panel" },
+    { href: "/buscar", label: "Buscar oficio" },   // más descriptivo para SEO
+    { href: "/como-funciona", label: "Cómo funciona" }, // reduce fricción/duda
   ];
+
+  const isActive = (href: string) => pathname === href;
 
   return (
     <>
       <nav
+        role="navigation"
+        aria-label="Navegación principal"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-white/95 backdrop-blur-md border-b border-gray-200" : "bg-white"
+          scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100"
+            : "bg-white"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-5 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center">
-            <Logo variant="dark" height={44} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+
+          {/* Logo */}
+          <Link href="/" aria-label="OficiosGo! — Inicio" className="flex items-center shrink-0">
+            <Logo variant="dark" height={40} />
           </Link>
 
-          {/* Desktop */}
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
+                aria-current={isActive(l.href) ? "page" : undefined}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  pathname === l.href
-                    ? "bg-yellow-50 text-brand-black"
-                    : "text-gray-600 hover:text-brand-black hover:bg-gray-50"
+                  isActive(l.href)
+                    ? "bg-amber-50 text-[#0d0e14]"
+                    : "text-gray-500 hover:text-[#0d0e14] hover:bg-gray-50"
                 }`}
               >
                 {l.label}
               </Link>
             ))}
-            <div className="w-px h-6 bg-gray-200 mx-2" />
+
+            <div className="w-px h-5 bg-gray-200 mx-2" aria-hidden="true" />
+
+            {/* CTA secundario — baja fricción */}
             <Link
-              href="/login"
-              className="px-5 py-2 rounded-lg bg-brand-black text-brand-yellow text-sm font-bold hover:bg-gray-800 transition-colors"
+              href="/registro"
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-[#0d0e14] hover:bg-gray-50 transition-colors"
             >
-              Ingresar
+              Publicá tu oficio
+            </Link>
+
+            {/* CTA principal */}
+            <Link
+              href="/buscar"
+              className="ml-1 px-5 py-2 rounded-lg bg-[#F5A623] text-[#0d0e14] text-sm font-bold hover:bg-[#e09612] transition-colors shadow-sm"
+            >
+              Encontrá un profesional
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2 text-brand-black"
-            aria-label="Menu"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {menuOpen ? (
-                <>
-                  <path d="M18 6 6 18" />
-                  <path d="m6 6 12 12" />
-                </>
-              ) : (
-                <>
-                  <line x1="4" x2="20" y1="6" y2="6" />
-                  <line x1="4" x2="20" y1="12" y2="12" />
-                  <line x1="4" x2="20" y1="18" y2="18" />
-                </>
-              )}
-            </svg>
-          </button>
+          {/* Mobile: CTA rápido visible + hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link
+              href="/buscar"
+              className="px-3.5 py-2 rounded-lg bg-[#F5A623] text-[#0d0e14] text-sm font-bold hover:bg-[#e09612] transition-colors"
+            >
+              Buscar
+            </Link>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 text-[#0d0e14] rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                {menuOpen ? (
+                  <>
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="4" x2="20" y1="6" y2="6" />
+                    <line x1="4" x2="20" y1="12" y2="12" />
+                    <line x1="4" x2="20" y1="18" y2="18" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="fixed top-16 inset-x-0 bottom-0 bg-white z-40 p-6 flex flex-col gap-2 md:hidden animate-in slide-in-from-top">
+      {/* Mobile menu — overlay completo */}
+      <div
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menú de navegación"
+        className={`fixed inset-0 top-16 bg-white z-40 flex flex-col md:hidden transition-all duration-200 ${
+          menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col gap-1.5 p-4 flex-1 overflow-y-auto">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              onClick={() => setMenuOpen(false)}
-              className="px-5 py-4 rounded-xl text-base font-semibold bg-gray-50 text-brand-black"
+              aria-current={isActive(l.href) ? "page" : undefined}
+              className={`flex items-center px-5 py-4 rounded-xl text-base font-semibold transition-colors ${
+                isActive(l.href)
+                  ? "bg-amber-50 text-[#0d0e14]"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {l.label}
+              {isActive(l.href) && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#F5A623]" aria-hidden="true" />
+              )}
             </Link>
           ))}
+
+          {/* Divisor */}
+          <div className="h-px bg-gray-100 my-2" aria-hidden="true" />
+
           <Link
             href="/login"
-            onClick={() => setMenuOpen(false)}
-            className="px-5 py-4 rounded-xl text-base font-bold bg-brand-black text-brand-yellow text-center mt-2"
+            className="flex items-center justify-center px-5 py-4 rounded-xl text-base font-semibold bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
           >
-            Ingresar
+            Ingresar a mi cuenta
           </Link>
+
+          {/* CTA principal mobile — full width, alto impacto */}
+          <Link
+            href="/buscar"
+            className="flex items-center justify-center px-5 py-4 rounded-xl text-base font-bold bg-[#F5A623] text-[#0d0e14] hover:bg-[#e09612] transition-colors mt-1 shadow-sm"
+          >
+            Encontrá un profesional →
+          </Link>
+
+          {/* Trust signal mobile */}
+          <p className="text-center text-xs text-gray-400 mt-3 pb-6">
+            Profesionales verificados en Villa María, Córdoba
+          </p>
         </div>
+      </div>
+
+      {/* Overlay oscuro detrás del menú */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 top-16 bg-black/20 z-30 md:hidden"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        />
       )}
     </>
   );

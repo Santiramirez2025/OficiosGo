@@ -1,39 +1,67 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 export function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+  const onScroll = useCallback(() => {
+    setScrolled(window.scrollY > 40);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [onScroll]);
 
   return (
     <nav
+      aria-label="Navegación principal"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[#1A1D2E]/95 backdrop-blur-xl border-b border-white/10 shadow-lg"
-          : "bg-[#1A1D2E]"
+          ? "bg-[#0F1120]/95 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16">
-        <Link href="/" className="flex items-center">
+
+        {/* Logo */}
+        <Link href="/" aria-label="OficiosGo! — Inicio">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-white.svg" alt="OficiosGo!" className="h-8 sm:h-10 w-auto" />
+          <img
+            src="/logo-white.svg"
+            alt="OficiosGo!"
+            className="h-7 sm:h-9 w-auto"
+          />
         </Link>
-        <div className="flex items-center gap-1.5 sm:gap-3">
-          <Link href="/login" className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-white/70 text-xs sm:text-sm font-semibold hover:text-white transition-colors">
+
+        {/* CTAs — jerarquía: ghost > outlined > filled */}
+        <div className="flex items-center gap-1 sm:gap-2">
+
+          {/* Menor prioridad — solo desktop */}
+          <Link
+            href="/login"
+            className="hidden sm:inline-flex px-4 py-2 rounded-lg text-white/60 text-sm font-medium hover:text-white transition-colors"
+          >
             Ingresar
           </Link>
-          <Link href="/app" className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-white/10 border border-white/15 text-white text-xs sm:text-sm font-bold hover:bg-white/20 transition-all">
-            Ver App
+
+          {/* Media prioridad */}
+          <Link
+            href="/app"
+            className="px-3 sm:px-5 py-2 rounded-lg bg-white/8 border border-white/12 text-white text-xs sm:text-sm font-semibold hover:bg-white/15 transition-all"
+          >
+            Explorar
           </Link>
-          <Link href="/registro" className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-[#F8C927] text-[#1A1D2E] text-xs sm:text-sm font-extrabold shadow-lg shadow-[#F8C927]/30 hover:scale-[1.03] transition-transform">
-            Registrate
+
+          {/* CTA primario — máxima atención */}
+          <Link
+            href="/registro"
+            className="px-3 sm:px-5 py-2 rounded-lg bg-[#F8C927] text-[#0F1120] text-xs sm:text-sm font-extrabold shadow-[0_0_16px_rgba(248,201,39,0.35)] hover:brightness-105 active:scale-[0.97] transition-all"
+          >
+            <span className="hidden sm:inline">Publicá tu servicio</span>
+            <span className="sm:hidden">Registrate</span>
           </Link>
         </div>
       </div>

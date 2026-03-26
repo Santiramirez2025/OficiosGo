@@ -22,8 +22,8 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Error"); return; }
-      router.push("/dashboard");
+      if (!res.ok) { setError(data.error || "Email o contraseña incorrectos"); return; }
+      router.push("/app/dashboard");
       router.refresh();
     } catch { setError("Error de conexión"); }
     finally { setLoading(false); }
@@ -31,14 +31,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1A1D2E] to-[#252839] flex flex-col">
-      {/* Header */}
-      <div className="pt-12 pb-8 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-[#F8C927] inline-flex items-center justify-center text-2xl font-black text-[#1A1D2E] shadow-xl shadow-[#F8C927]/20 mb-4">Go</div>
+      <div className="pt-12 pb-8 text-center px-6">
+        <Link href="/">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-white.svg" alt="OficiosGo!" className="h-12 w-auto mx-auto mb-5" />
+        </Link>
         <h1 className="text-2xl font-black text-white">Iniciar sesión</h1>
         <p className="text-sm text-gray-400 mt-1">Accedé a tu panel de profesional</p>
       </div>
 
-      {/* Form */}
       <div className="flex-1 bg-[#F5F5F7] rounded-t-[28px] px-6 pt-8 pb-10">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -65,9 +66,9 @@ export default function LoginPage() {
           <Link href="/registro" className="text-[#5C80BC] font-bold">Registrate gratis</Link>
         </p>
 
-        <p className="text-center text-[10px] text-gray-400 mt-8">
-          Demo: carlos@test.com / pro123
-        </p>
+        <Link href="/" className="block text-center text-xs text-gray-400 mt-6 hover:text-gray-600">
+          ← Volver al inicio
+        </Link>
       </div>
     </div>
   );

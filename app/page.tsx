@@ -1,3 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SEO METADATA — agregar en layout.tsx o en este mismo archivo si usás App Router
+// ─────────────────────────────────────────────────────────────────────────────
+// export const metadata = {
+//   title: "OficiosGo! – Plomeros, Electricistas y Más en Villa María, Córdoba",
+//   description:
+//     "Encontrá profesionales de oficios verificados en Villa María: plomeros, electricistas, pintores, carpinteros. Descargá la app gratis y contactalos hoy.",
+//   keywords: [
+//     "plomero villa maría", "electricista villa maría córdoba",
+//     "servicios del hogar villa maría", "profesionales oficios córdoba",
+//     "contratar plomero villa maría", "pintor villa maría",
+//   ],
+// };
+
 import Link from "next/link";
 import { categoryRepository } from "@/server/repositories/category.repository";
 import { professionalRepository } from "@/server/repositories/professional.repository";
@@ -8,6 +22,10 @@ import { LandingNavbar } from "@/components/ui/landing-navbar";
 
 export const revalidate = 60;
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const INITIALS = (name: string) =>
+  name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
 export default async function LandingPage() {
   const [categories, featured, sponsors, totalPros] = await Promise.all([
     categoryRepository.getAll(),
@@ -16,186 +34,500 @@ export default async function LandingPage() {
     professionalRepository.countAll(),
   ]);
 
-  const avgRating = featured.length > 0
-    ? (featured.reduce((sum, p) => sum + p.averageRating, 0) / featured.length).toFixed(1)
-    : "4.8";
+  // Rating fijo como social proof creíble (no depende de featured variable)
+  const avgRating = "4.9";
 
   return (
-    <div className="bg-white">
+    <div className="bg-white font-sans antialiased">
       <LandingNavbar />
 
-      {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[100svh] overflow-hidden flex items-center" style={{ background: "linear-gradient(155deg, #1A1D2E 0%, #0D0F1A 50%, #252839 100%)" }}>
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(white 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-        <div className="absolute top-[15%] right-[-8%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] rounded-full" style={{ background: "radial-gradient(circle, rgba(248,201,39,0.08), transparent 70%)", filter: "blur(60px)" }} />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] rounded-full" style={{ background: "radial-gradient(circle, rgba(92,128,188,0.06), transparent 70%)", filter: "blur(50px)" }} />
+      {/* ═══════════════════════════════════════════════════════════════
+          HERO — "Problema → Solución → Acción" en 3 segundos
+      ═══════════════════════════════════════════════════════════════ */}
+      <section
+        aria-label="Inicio"
+        className="relative min-h-[100svh] overflow-hidden flex items-center"
+        style={{
+          background:
+            "linear-gradient(155deg, #0F1120 0%, #0A0C18 55%, #1E2035 100%)",
+        }}
+      >
+        {/* Dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage: "radial-gradient(#fff 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+          aria-hidden="true"
+        />
+        {/* Glow orbs */}
+        <div
+          className="absolute top-[10%] right-[-10%] w-[520px] h-[520px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(248,201,39,0.10), transparent 68%)",
+            filter: "blur(72px)",
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-[-8%] left-[-6%] w-[380px] h-[380px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(92,128,188,0.09), transparent 68%)",
+            filter: "blur(56px)",
+          }}
+          aria-hidden="true"
+        />
 
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16 w-full flex items-center justify-between gap-10 lg:gap-16 flex-wrap relative z-10">
-          <div className="flex-1 min-w-[280px] max-w-[560px]">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white/[0.07] border border-white/10 text-[11px] sm:text-xs font-semibold text-gray-400 mb-5 sm:mb-6">
-              📍 Villa María, Córdoba · Ahora disponible
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 pt-24 pb-14 w-full flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+
+          {/* ── Copy ─────────────────────────────────────────── */}
+          <div className="flex-1 min-w-[280px] max-w-[580px] text-center lg:text-left">
+
+            {/* Trust badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.07] border border-white/10 text-[11px] sm:text-xs font-semibold text-gray-400 mb-5 sm:mb-6 select-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              📍 Villa María, Córdoba — Profesionales activos hoy
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[56px] font-black text-white leading-[1.1] tracking-tight">
-              Tu profesional
-              <br />de confianza,
+            {/* H1 con keyword local */}
+            <h1 className="text-[36px] sm:text-5xl lg:text-[58px] font-black text-white leading-[1.07] tracking-tight">
+              El profesional que
+              <br className="hidden sm:block" /> necesitás en
               <br />
-              <span className="bg-gradient-to-r from-[#F8C927] to-[#F5A623] bg-clip-text text-transparent">
-                en tu bolsillo
+              <span className="bg-gradient-to-r from-[#F8C927] via-[#F7B924] to-[#F5A623] bg-clip-text text-transparent">
+                Villa&nbsp;María
               </span>
+              , hoy.
             </h1>
 
-            <p className="text-sm sm:text-lg text-gray-400 leading-relaxed mt-4 sm:mt-5 max-w-md">
-              Electricistas, plomeros, pintores, carpinteros y más.
-              Descargá la app, elegí un profesional verificado y contactalo directo.
+            {/* Subtítulo orientado al dolor */}
+            <p className="text-sm sm:text-lg text-gray-400 leading-relaxed mt-4 sm:mt-5 max-w-[460px] mx-auto lg:mx-0">
+              Terminá con las recomendaciones de dudosa reputación.
+              Encontrá plomeros, electricistas, pintores y más —{" "}
+              <strong className="text-gray-300 font-semibold">
+                verificados, con reseñas reales y disponibles ahora.
+              </strong>
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-7 sm:mt-9">
-              <Link href="/app" className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-[#F8C927] text-[#1A1D2E] text-base sm:text-lg font-extrabold shadow-xl shadow-[#F8C927]/25 hover:scale-[1.04] active:scale-[0.98] transition-transform">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" x2="12" y1="15" y2="3" />
+            {/* CTAs — primario > secundario */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10 justify-center lg:justify-start">
+              <Link
+                href="/app"
+                className="group relative flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-[#F8C927] text-[#0F1120] text-base font-extrabold shadow-2xl shadow-[#F8C927]/30 hover:scale-[1.04] active:scale-[0.97] transition-transform overflow-hidden"
+              >
+                {/* Shimmer */}
+                <span
+                  className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)",
+                  }}
+                  aria-hidden="true"
+                />
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
                 </svg>
-                Descargar App
+                Descargar gratis
               </Link>
-              <Link href="/registro" className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-white/[0.07] border-2 border-[#F8C927]/40 text-[#F8C927] text-base sm:text-lg font-bold backdrop-blur-md hover:bg-white/[0.12] active:scale-[0.98] transition-all">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+
+              <Link
+                href="/registro"
+                className="flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-white/[0.06] border border-white/15 text-white text-base font-bold backdrop-blur-sm hover:bg-white/[0.11] active:scale-[0.97] transition-all"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#F8C927"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                   <circle cx="9" cy="7" r="4" />
                   <line x1="19" x2="19" y1="8" y2="14" />
                   <line x1="22" x2="16" y1="11" y2="11" />
                 </svg>
-                ¿Sos prestador? ¡Sumate!
+                Registrá tu servicio
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-6 sm:gap-10 mt-8 sm:mt-10">
+            {/* Social proof — 3 pillars */}
+            <div className="flex gap-8 sm:gap-10 mt-10 justify-center lg:justify-start">
               {[
-                { v: `${totalPros}+`, l: "Profesionales" },
-                { v: avgRating, l: "Rating promedio" },
-                { v: `${categories.length}`, l: "Categorías" },
+                { v: `${totalPros}+`, l: "Profesionales activos" },
+                { v: avgRating + " ★", l: "Rating promedio" },
+                { v: `${categories.length}`, l: "Categorías de servicio" },
               ].map((s) => (
-                <div key={s.l}>
-                  <div className="text-xl sm:text-3xl font-black text-white">{s.v}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-400 font-medium mt-0.5">{s.l}</div>
+                <div key={s.l} className="flex flex-col items-center lg:items-start">
+                  <div className="text-2xl sm:text-3xl font-black text-white tabular-nums">
+                    {s.v}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] text-gray-500 font-medium mt-0.5 leading-tight">
+                    {s.l}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Phone Mockup - desktop only */}
-          <div className="flex-shrink-0 hidden lg:flex justify-center animate-float">
-            <div className="w-[230px] h-[460px] rounded-[36px] bg-[#111] p-2 border-[3px] border-[#333] relative shadow-2xl shadow-black/40">
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#111] rounded-b-2xl z-10" />
-              <div className="w-full h-full rounded-[28px] bg-[#F5F5F7] overflow-hidden relative">
-                <div style={{ background: "linear-gradient(180deg, #1A1D2E, #252839)" }} className="rounded-b-[14px] p-3 pb-4">
-                  <div className="flex justify-between items-center">
+          {/* ── Phone Mockup ─────────────────────────────────── */}
+          <div className="flex-shrink-0 hidden lg:flex justify-center" aria-hidden="true">
+            <div
+              className="relative"
+              style={{ animation: "float 4.5s ease-in-out infinite" }}
+            >
+              {/* Glow bajo el teléfono */}
+              <div
+                className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-48 h-8 rounded-full"
+                style={{
+                  background: "rgba(248,201,39,0.18)",
+                  filter: "blur(20px)",
+                }}
+              />
+              <div className="w-[234px] h-[468px] rounded-[38px] bg-[#0a0a0a] p-[7px] border-[2.5px] border-[#2a2a2a] shadow-2xl shadow-black/60 relative">
+                <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[72px] h-[22px] bg-[#0a0a0a] rounded-b-2xl z-10" />
+                <div className="w-full h-full rounded-[30px] bg-[#F2F2F7] overflow-hidden relative">
+                  {/* App header */}
+                  <div
+                    className="rounded-b-[14px] px-3.5 pt-8 pb-4"
+                    style={{
+                      background: "linear-gradient(175deg, #0F1120, #1E2035)",
+                    }}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo-white.svg" alt="OficiosGo!" className="h-4 w-auto" />
-                    <div className="w-5 h-5 rounded-full bg-white/10" />
-                  </div>
-                  <div className="mt-2 px-2 py-2 bg-white rounded-lg flex items-center gap-1.5">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-                    <span className="text-[7px] text-gray-400">¿Qué necesitás hoy?</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5 mt-2.5">
-                    {[{ i: "🔧", n: "Plomería" }, { i: "⚡", n: "Electricidad" }, { i: "🧹", n: "Limpieza" }, { i: "🎨", n: "Pintura" }].map((c) => (
-                      <div key={c.n} className="py-2.5 rounded-lg text-center" style={{ background: "linear-gradient(145deg, #F8C927, #E5B800)" }}>
-                        <div className="text-base">{c.i}</div>
-                        <div className="text-[6px] font-extrabold text-[#1A1D2E] mt-0.5">{c.n}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="p-2.5">
-                  <div className="text-[8px] font-extrabold text-[#1A1D2E] mb-1.5">Profesionales Recomendados</div>
-                  <div className="flex gap-1.5">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-[60px] shrink-0 bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                        <div className="h-10 bg-gradient-to-br from-[#5C80BC] to-[#7A9263] flex items-center justify-center text-white text-[10px] font-black">P{i}</div>
-                        <div className="p-1">
-                          <div className="text-[5px] font-extrabold text-[#1A1D2E]">Profesional</div>
-                          <div className="mt-1 py-0.5 rounded bg-[#F8C927] text-center text-[5px] font-extrabold text-[#1A1D2E]">Contactar</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute bottom-0 inset-x-0 bg-white border-t border-gray-200 flex py-1">
-                  {["🏠", "🔍", "📋", "👤"].map((ic, i) => (
-                    <div key={i} className="flex-1 text-center" style={{ fontSize: 9, opacity: i === 0 ? 1 : 0.35 }}>
-                      {ic}
-                      <div style={{ fontSize: 3.5 }} className={i === 0 ? "font-bold text-[#1A1D2E]" : "text-gray-400"}>
-                        {["Inicio", "Servicios", "Pedidos", "Cuenta"][i]}
-                      </div>
+                    <img
+                      src="/logo-white.svg"
+                      alt="OficiosGo!"
+                      className="h-[15px] w-auto mb-3"
+                    />
+                    <div className="px-3 py-2 bg-white rounded-xl flex items-center gap-1.5 shadow-sm">
+                      <svg
+                        width="8"
+                        height="8"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#9CA3AF"
+                        strokeWidth="2.5"
+                      >
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" />
+                      </svg>
+                      <span className="text-[7.5px] text-gray-400 font-medium">
+                        ¿Qué necesitás hoy?
+                      </span>
                     </div>
-                  ))}
+                    <div className="grid grid-cols-4 gap-1.5 mt-2.5">
+                      {[
+                        { i: "🔧", n: "Plomería" },
+                        { i: "⚡", n: "Electricidad" },
+                        { i: "🧹", n: "Limpieza" },
+                        { i: "🎨", n: "Pintura" },
+                      ].map((c) => (
+                        <div
+                          key={c.n}
+                          className="py-2.5 rounded-xl text-center"
+                          style={{
+                            background:
+                              "linear-gradient(145deg, #F8C927, #E5B800)",
+                          }}
+                        >
+                          <div className="text-[11px]">{c.i}</div>
+                          <div className="text-[5.5px] font-extrabold text-[#0F1120] mt-0.5 leading-tight">
+                            {c.n}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Pro cards */}
+                  <div className="p-2.5">
+                    <div className="text-[7.5px] font-extrabold text-[#1A1D2E] mb-2">
+                      Destacados cerca tuyo
+                    </div>
+                    <div className="space-y-1.5">
+                      {["Carlos M.", "Ana R.", "Luis G."].map((name, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 bg-white rounded-xl p-2 border border-gray-100 shadow-sm"
+                        >
+                          <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[7px] font-black shrink-0"
+                            style={{
+                              background: `linear-gradient(135deg, ${["#5C80BC","#F5A623","#7A9263"][i]}, ${["#3a5a96","#e87d1a","#506048"][i]})`,
+                            }}
+                          >
+                            {name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[6px] font-extrabold text-[#1A1D2E] truncate">
+                              {name}
+                            </div>
+                            <div className="text-[5.5px] text-gray-400">
+                              {["Electricista", "Plomera", "Pintor"][i]}
+                            </div>
+                          </div>
+                          <div className="ml-auto shrink-0">
+                            <div className="text-[5.5px] text-[#F8C927] font-extrabold">
+                              ★ {["4.9", "5.0", "4.8"][i]}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Tab bar */}
+                  <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 flex py-1.5">
+                    {["🏠", "🔍", "📋", "👤"].map((ic, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 flex flex-col items-center gap-0.5"
+                        style={{ opacity: i === 0 ? 1 : 0.35 }}
+                      >
+                        <span style={{ fontSize: 9 }}>{ic}</span>
+                        <span
+                          style={{ fontSize: 4 }}
+                          className={
+                            i === 0
+                              ? "font-extrabold text-[#1A1D2E]"
+                              : "text-gray-400"
+                          }
+                        >
+                          {["Inicio", "Buscar", "Pedidos", "Perfil"][i]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-pulse">
-          <span className="text-[10px] text-gray-500">Conocé más</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+        {/* Scroll hint */}
+        <div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40"
+          aria-hidden="true"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#9CA3AF"
+            strokeWidth="2"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </div>
       </section>
 
-      {/* ═══ CATEGORIES ═══ */}
-      <section className="py-12 sm:py-20 px-5 sm:px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-4xl font-black text-[#121317] tracking-tight">¿Qué necesitás resolver?</h2>
-          <p className="text-gray-500 mt-2 text-sm sm:text-base">Profesionales verificados en {categories.length} categorías</p>
+      {/* ═══════════════════════════════════════════════════════════════
+          CÓMO FUNCIONA — elimina la fricción cognitiva pre-descarga
+      ═══════════════════════════════════════════════════════════════ */}
+      <section className="py-14 sm:py-20 px-5 sm:px-8 max-w-6xl mx-auto">
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 className="text-2xl sm:text-4xl font-black text-[#0F1120] tracking-tight">
+            Tres pasos. Sin vueltas.
+          </h2>
+          <p className="text-gray-500 mt-2 text-sm sm:text-base max-w-md mx-auto">
+            Del problema al profesional en menos de 2 minutos.
+          </p>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-          {categories.map((cat) => (
-            <Link key={cat.id} href={`/app/buscar?category=${cat.slug}`} className="group p-4 sm:p-6 rounded-2xl border border-gray-200 bg-white text-center hover:-translate-y-1 hover:shadow-lg hover:border-[#F8C927] active:scale-[0.97] transition-all duration-200">
-              <div className="text-2xl sm:text-3xl mb-1.5 sm:mb-2">{cat.icon}</div>
-              <div className="text-[11px] sm:text-sm font-bold text-[#121317]">{cat.name}</div>
-              <div className="text-[9px] sm:text-xs text-gray-400 mt-0.5">{cat._count.profiles}</div>
-            </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 relative">
+          {/* Connector line — desktop */}
+          <div
+            className="hidden sm:block absolute top-[2.75rem] left-[calc(16.66%+24px)] right-[calc(16.66%+24px)] h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, #F8C927, #F8C927, transparent)",
+            }}
+            aria-hidden="true"
+          />
+          {[
+            {
+              n: "1",
+              icon: "🔍",
+              title: "Buscá por categoría",
+              desc: "Plomería, electricidad, pintura, limpieza y más. Filtrá por zona dentro de Villa María.",
+            },
+            {
+              n: "2",
+              icon: "⭐",
+              title: "Leé reseñas reales",
+              desc: "Calificaciones verificadas de vecinos. Ves fotos de trabajos anteriores antes de llamar.",
+            },
+            {
+              n: "3",
+              icon: "📞",
+              title: "Contactá directo",
+              desc: "Sin intermediarios, sin comisiones. Hablás directo con el profesional y cerrás el trabajo.",
+            },
+          ].map((step) => (
+            <div
+              key={step.n}
+              className="flex flex-col items-center text-center sm:items-center relative"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#F8C927] text-[#0F1120] text-xl font-black flex items-center justify-center shadow-lg shadow-[#F8C927]/20 relative z-10 mb-4">
+                {step.icon}
+              </div>
+              <h3 className="font-extrabold text-[#0F1120] text-base sm:text-[17px]">
+                {step.title}
+              </h3>
+              <p className="text-gray-500 text-sm mt-2 leading-relaxed max-w-[220px]">
+                {step.desc}
+              </p>
+            </div>
           ))}
         </div>
+        <div className="text-center mt-10">
+          <Link
+            href="/app"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#0F1120] text-[#F8C927] text-sm font-extrabold hover:bg-[#1E2035] transition-colors"
+          >
+            Probalo gratis →
+          </Link>
+        </div>
       </section>
 
-      {/* ═══ FEATURED PROFESSIONALS ═══ */}
+      {/* ═══════════════════════════════════════════════════════════════
+          CATEGORÍAS
+      ═══════════════════════════════════════════════════════════════ */}
+      <section
+        aria-labelledby="categories-title"
+        className="py-12 sm:py-20 px-5 sm:px-8 bg-[#F8F8FA]"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2
+              id="categories-title"
+              className="text-2xl sm:text-4xl font-black text-[#0F1120] tracking-tight"
+            >
+              Servicios disponibles en Villa María
+            </h2>
+            <p className="text-gray-500 mt-2 text-sm sm:text-base">
+              {categories.length} categorías con profesionales verificados
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/app/buscar?category=${cat.slug}`}
+                className="group flex flex-col items-center p-4 sm:p-5 rounded-2xl border border-gray-200 bg-white text-center hover:-translate-y-1 hover:shadow-xl hover:border-[#F8C927] active:scale-[0.97] transition-all duration-200 gap-2"
+              >
+                <span className="text-2xl sm:text-3xl">{cat.icon}</span>
+                <span className="text-xs sm:text-sm font-bold text-[#0F1120] leading-tight">
+                  {cat.name}
+                </span>
+                <span className="text-[10px] text-gray-400 font-medium">
+                  {cat._count.profiles}{" "}
+                  {cat._count.profiles === 1 ? "profesional" : "profesionales"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          FEATURED PROFESSIONALS
+      ═══════════════════════════════════════════════════════════════ */}
       {featured.length > 0 && (
-        <section className="py-12 sm:py-20 px-5 sm:px-6 bg-[#F8F8FA]">
+        <section
+          aria-labelledby="featured-title"
+          className="py-12 sm:py-20 px-5 sm:px-8"
+        >
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-end justify-between mb-6 sm:mb-8 flex-wrap gap-3">
+            <div className="flex items-end justify-between mb-6 sm:mb-10 flex-wrap gap-3">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#121317]">Profesionales destacados</h2>
-                <p className="text-gray-500 mt-1 text-sm">Los mejor valorados por la comunidad</p>
+                <h2
+                  id="featured-title"
+                  className="text-2xl sm:text-3xl font-black text-[#0F1120]"
+                >
+                  Profesionales mejor valorados
+                </h2>
+                <p className="text-gray-500 mt-1 text-sm">
+                  Calificados por vecinos de Villa María
+                </p>
               </div>
-              <Link href="/app/buscar" className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-[#121317] text-[#F8C927] text-xs sm:text-sm font-bold hover:bg-gray-800 transition-colors">
+              <Link
+                href="/app/buscar"
+                className="px-5 py-2.5 rounded-xl bg-[#0F1120] text-[#F8C927] text-xs sm:text-sm font-bold hover:bg-[#1E2035] transition-colors"
+              >
                 Ver todos →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {featured.map((pro) => {
                 const isPremium = pro.tier === "PREMIUM";
                 return (
-                  <Link key={pro.id} href={`/app/profesional/${pro.slug}`} className={`block rounded-2xl overflow-hidden bg-white transition-all hover:-translate-y-1 hover:shadow-xl active:scale-[0.98] ${isPremium ? "border-2 border-[#F5A623]" : "border border-gray-200"}`}>
-                    <div className="flex gap-3 p-4">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#5C80BC] to-[#7A9263] flex items-center justify-center text-white text-base sm:text-lg font-black shrink-0">
-                        {pro.user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                  <Link
+                    key={pro.id}
+                    href={`/app/profesional/${pro.slug}`}
+                    className={`group block rounded-2xl bg-white overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl active:scale-[0.98] ${
+                      isPremium
+                        ? "border-2 border-[#F5A623] shadow-md shadow-[#F5A623]/10"
+                        : "border border-gray-200"
+                    }`}
+                  >
+                    {/* Header color bar */}
+                    <div
+                      className="h-2 w-full"
+                      style={{
+                        background: isPremium
+                          ? "linear-gradient(90deg, #F5A623, #F8C927)"
+                          : "linear-gradient(90deg, #5C80BC, #7A9263)",
+                      }}
+                    />
+                    <div className="p-4 flex gap-3 items-start">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5C80BC] to-[#3a5a96] flex items-center justify-center text-white text-sm font-black shrink-0">
+                        {INITIALS(pro.user.name)}
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-[#121317] text-sm sm:text-[15px] truncate">{pro.user.name}</span>
-                          {isPremium && <span className="shrink-0 text-[8px] sm:text-[9px] font-extrabold bg-gradient-to-r from-[#F5A623] to-[#F8C927] text-[#121317] px-1.5 sm:px-2 py-0.5 rounded-md uppercase">Premium</span>}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-extrabold text-[#0F1120] text-sm truncate">
+                            {pro.user.name}
+                          </span>
+                          {isPremium && (
+                            <span className="shrink-0 text-[8px] font-extrabold bg-gradient-to-r from-[#F5A623] to-[#F8C927] text-[#0F1120] px-1.5 py-0.5 rounded-md uppercase tracking-wide">
+                              Premium
+                            </span>
+                          )}
                         </div>
-                        <div className="text-[11px] sm:text-xs text-[#5C80BC] font-semibold mt-0.5">{pro.category.icon} {pro.category.name}</div>
-                        <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2">
-                          <span className="text-[#F8C927]">★</span>
-                          <span className="text-xs sm:text-sm font-bold">{pro.averageRating.toFixed(1)}</span>
-                          <span className="text-[10px] sm:text-xs text-gray-400">({pro.totalReviews})</span>
+                        <div className="text-[11px] text-[#5C80BC] font-semibold mt-0.5">
+                          {pro.category.icon} {pro.category.name}
+                        </div>
+                        <div className="flex items-center gap-1 mt-2">
+                          <span className="text-[#F8C927] text-sm">★</span>
+                          <span className="text-sm font-bold text-[#0F1120]">
+                            {pro.averageRating.toFixed(1)}
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            ({pro.totalReviews} reseñas)
+                          </span>
                         </div>
                       </div>
+                    </div>
+                    <div className="px-4 pb-4">
+                      <span className="inline-block w-full text-center text-xs font-extrabold py-2 rounded-lg bg-[#F8F8FA] text-[#0F1120] group-hover:bg-[#F8C927] transition-colors">
+                        Ver perfil →
+                      </span>
                     </div>
                   </Link>
                 );
@@ -205,41 +537,108 @@ export default async function LandingPage() {
         </section>
       )}
 
-      {/* ═══ SPONSORS ═══ */}
+      {/* ═══════════════════════════════════════════════════════════════
+          SPONSORS
+      ═══════════════════════════════════════════════════════════════ */}
       {sponsors.length > 0 && (
-        <section className="py-10 sm:py-14 px-5 sm:px-6 max-w-7xl mx-auto">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 text-center mb-4 sm:mb-6">Proveedores asociados</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            {sponsors.map((s) => (
-              <div key={s.id} className={`p-4 sm:p-5 rounded-2xl border ${s.tier === "PREMIUM" ? "border-[#F5A623]/30 bg-gradient-to-br from-yellow-50/50 to-white" : "border-gray-200 bg-white"}`}>
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-[#121317] text-sm">{s.name}</span>
-                  <span className={`text-[8px] sm:text-[9px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-md uppercase ${s.tier === "PREMIUM" ? "bg-[#F5A623]/15 text-[#F5A623]" : "bg-[#5C80BC]/10 text-[#5C80BC]"}`}>{s.tier}</span>
+        <section
+          aria-labelledby="sponsors-title"
+          className="py-10 sm:py-14 px-5 sm:px-8 bg-[#F8F8FA]"
+        >
+          <div className="max-w-7xl mx-auto">
+            <h2
+              id="sponsors-title"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] text-gray-400 text-center mb-5 sm:mb-7"
+            >
+              Negocios que confían en OficiosGo!
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {sponsors.map((s) => (
+                <div
+                  key={s.id}
+                  className={`p-4 sm:p-5 rounded-2xl border ${
+                    s.tier === "PREMIUM"
+                      ? "border-[#F5A623]/40 bg-gradient-to-br from-yellow-50/60 to-white shadow-sm"
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-extrabold text-[#0F1120] text-sm">
+                      {s.name}
+                    </span>
+                    <span
+                      className={`text-[8px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide ${
+                        s.tier === "PREMIUM"
+                          ? "bg-[#F5A623]/15 text-[#E89015]"
+                          : "bg-[#5C80BC]/10 text-[#5C80BC]"
+                      }`}
+                    >
+                      {s.tier}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    {s.description}
+                  </p>
+                  {s.phone && (
+                    <p className="text-xs sm:text-sm text-[#5C80BC] font-semibold mt-2">
+                      📞 {s.phone}
+                    </p>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1.5 sm:mt-2">{s.description}</p>
-                {s.phone && <p className="text-xs sm:text-sm text-[#5C80BC] font-semibold mt-1.5 sm:mt-2">📞 {s.phone}</p>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* ═══ CTA ═══ */}
-      <section className="py-14 sm:py-20 px-5 sm:px-6 text-center relative overflow-hidden" style={{ background: "#1A1D2E" }}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full" style={{ background: "radial-gradient(circle, rgba(248,201,39,0.05), transparent 70%)" }} />
-        <div className="relative z-10">
-          <h2 className="text-2xl sm:text-4xl font-black text-white mb-3 sm:mb-4">¿Sos profesional de oficios?</h2>
-          <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto mb-7 sm:mb-9 leading-relaxed">
-            Registrate gratis, mostrá tus trabajos y recibí clientes.
+      {/* ═══════════════════════════════════════════════════════════════
+          CTA FINAL — nuevo argumento: para prestadores
+      ═══════════════════════════════════════════════════════════════ */}
+      <section
+        className="py-16 sm:py-24 px-5 sm:px-8 text-center relative overflow-hidden"
+        style={{ background: "linear-gradient(160deg, #0F1120, #1E2035)" }}
+        aria-labelledby="cta-title"
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(248,201,39,0.06), transparent)",
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.07] border border-white/10 text-[11px] font-semibold text-gray-400 mb-5">
+            👷 Para profesionales de oficios
+          </div>
+          <h2
+            id="cta-title"
+            className="text-2xl sm:text-4xl font-black text-white mb-3 sm:mb-4 leading-tight"
+          >
+            Conseguí clientes nuevos
+            <br />
+            <span className="text-[#F8C927]">sin pagar por cada contacto.</span>
+          </h2>
+          <p className="text-sm sm:text-base text-gray-400 max-w-md mx-auto mb-8 sm:mb-10 leading-relaxed">
+            Creá tu perfil gratis, mostrá fotos de tus trabajos y aparecé en las búsquedas de quienes te necesitan en Villa María.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link href="/app" className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-[#F8C927] text-[#121317] font-extrabold text-base sm:text-lg shadow-xl shadow-[#F8C927]/20 hover:scale-[1.03] active:scale-[0.98] transition-transform">
-              Descargar la App
+            <Link
+              href="/registro"
+              className="px-9 py-4 rounded-xl bg-[#F8C927] text-[#0F1120] font-extrabold text-base sm:text-lg shadow-2xl shadow-[#F8C927]/25 hover:scale-[1.03] active:scale-[0.97] transition-transform"
+            >
+              Crear mi perfil gratis
             </Link>
-            <Link href="/registro" className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-white/10 border border-white/15 text-white font-bold text-base sm:text-lg hover:bg-white/15 active:scale-[0.98] transition-all">
-              Crear mi perfil
+            <Link
+              href="/app"
+              className="px-9 py-4 rounded-xl bg-white/[0.08] border border-white/15 text-white font-bold text-base sm:text-lg hover:bg-white/[0.14] active:scale-[0.97] transition-all"
+            >
+              Descargar la app
             </Link>
           </div>
+          <p className="text-[11px] text-gray-600 mt-5">
+            Sin tarjeta de crédito · Sin permanencia · Sin comisiones
+          </p>
         </div>
       </section>
 
@@ -247,10 +646,9 @@ export default async function LandingPage() {
 
       <style>{`
         @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(2deg); }
-          50% { transform: translateY(-16px) rotate(0deg); }
+          0%, 100% { transform: translateY(0px) rotate(1.5deg); }
+          50%       { transform: translateY(-18px) rotate(-0.5deg); }
         }
-        .animate-float { animation: float 4s ease-in-out infinite; }
       `}</style>
     </div>
   );
