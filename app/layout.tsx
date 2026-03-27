@@ -156,6 +156,7 @@ export default function RootLayout({
   return (
     <html lang="es" dir="ltr">
       <head>
+      <meta charSet="utf-8" />
         {/* ── JSON-LD Schema.org ── */}
         <script
           type="application/ld+json"
@@ -163,9 +164,7 @@ export default function RootLayout({
         />
 
         {/* ── PWA icons ── */}
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
 
         {/* ── Fonts — subset mínimo para reducir LCP ── */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
