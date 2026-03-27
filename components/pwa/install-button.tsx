@@ -8,41 +8,70 @@ export function InstallButton({ variant = "small" }: { variant?: "small" | "full
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setInstalled(true);
       return;
     }
 
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+    // iOS detection
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(ios);
+    if (ios) setReady(true);
 
+    // Android/Chrome: capture install prompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      setReady(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setInstalled(true));
 
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    // Track install
+    const installHandler = () => {
+      setInstalled(true);
+      setDeferredPrompt(null);
+      setReady(false);
+    };
+    window.addEventListener("appinstalled", installHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installHandler);
+    };
   }, []);
 
   const handleInstall = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          setInstalled(true);
+          localStorage.setItem("oficiosgo-installed", "true");
+        }
+      } catch (err) {
+        console.error("Install prompt error:", err);
+      }
       setDeferredPrompt(null);
     } else if (isIOS) {
       setShowIOSGuide(true);
     }
   };
 
+  // Don't render if installed or not ready
   if (installed) return null;
+  if (!ready) return null;
 
   if (variant === "small") {
     return (
       <>
-        <button onClick={handleInstall} className="w-10 h-10 rounded-full bg-[#F8C927]/15 flex items-center justify-center" aria-label="Instalar app">
+        <button onClick={handleInstall} className="w-10 h-10 rounded-full bg-[#F8C927]/15 flex items-center justify-center active:scale-90 transition-transform" aria-label="Instalar app">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2.5" strokeLinecap="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
@@ -56,7 +85,7 @@ export function InstallButton({ variant = "small" }: { variant?: "small" | "full
 
   return (
     <>
-      <button onClick={handleInstall} className="flex items-center gap-3 w-full px-4 py-4 rounded-xl bg-gradient-to-r from-[#1A1D2E] to-[#252839] border border-[#F8C927]/20 text-left">
+      <button onClick={handleInstall} className="flex items-center gap-3 w-full px-4 py-4 rounded-xl bg-gradient-to-r from-[#1A1D2E] to-[#252839] border border-[#F8C927]/20 text-left active:scale-[0.98] transition-transform">
         <div className="w-10 h-10 rounded-xl bg-[#F8C927] flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1D2E" strokeWidth="2.5" strokeLinecap="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -98,23 +127,23 @@ function IOSGuidePortal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <div style={{ padding: "0 20px 32px" }}>
-          <h3 style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 4 }}>Instalá la app en tu celular</h3>
-          <p style={{ fontSize: 14, color: "#9CA3AF", marginBottom: 20 }}>Sin descargar nada del store · 2 pasos</p>
+          <h3 style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 4 }}>Instala la app en tu celular</h3>
+          <p style={{ fontSize: 14, color: "#9CA3AF", marginBottom: 20 }}>Sin descargar nada del store - 2 pasos</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", gap: 14 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#F8C927", display: "flex", alignItems: "center", justifyContent: "center", color: "#1A1D2E", fontSize: 14, fontWeight: 900, flexShrink: 0 }}>1</div>
               <div style={{ paddingTop: 2 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Tocá el botón de compartir</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Toca el boton de compartir</p>
                 <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 12, background: "rgba(255,255,255,0.1)", width: "fit-content" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" x2="12" y1="2" y2="15" /></svg>
-                  <span style={{ fontSize: 12, color: "#D1D5DB" }}>Este ícono en la barra de abajo</span>
+                  <span style={{ fontSize: 12, color: "#D1D5DB" }}>Este icono en la barra de abajo</span>
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 14 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#F8C927", display: "flex", alignItems: "center", justifyContent: "center", color: "#1A1D2E", fontSize: 14, fontWeight: 900, flexShrink: 0 }}>2</div>
               <div style={{ paddingTop: 2 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Elegí &quot;Agregar a inicio&quot;</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Elegi &quot;Agregar a inicio&quot;</p>
                 <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 12, background: "rgba(255,255,255,0.1)", width: "fit-content" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8C927" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="12" x2="12" y1="8" y2="16" /><line x1="8" x2="16" y1="12" y2="12" /></svg>
                   <span style={{ fontSize: 12, color: "#D1D5DB" }}>Agregar a pantalla de inicio</span>
